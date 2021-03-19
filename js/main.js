@@ -1,4 +1,4 @@
-let index = 2;
+let index = 0;
 let tickName = document.getElementById('ticketName');
 let ticketImgUrl = document.getElementById('ticketImgUrl');
 let ticketRegion = document.getElementById('ticketRegion');
@@ -12,14 +12,12 @@ let searchResultFail = document.querySelector('.searchResultFail');
 let ul = document.querySelector('.ticketCard-area');
 let searchValue = document.querySelector('.searchValue');
 let regionSearch = document.querySelector('.regionSearch');
-
 let url = `https://raw.githubusercontent.com/hexschool/js-training/main/travelApi.json`;
 let searchResult = [];
-
 let data = [];
 
-cardInit();
 formInit();
+cardInit(true);
 
 submit.addEventListener('click',(e)=>{
     index += 1;
@@ -41,9 +39,9 @@ submit.addEventListener('click',(e)=>{
       return false;
     }
 
-    formInit();
     data.push(ticketData);
-    getData('全部地區', false);
+    formInit();
+    cardInit(false);
 })
 
 regionSearch.addEventListener('click', (e)=>{
@@ -65,18 +63,22 @@ function checkInput(){
   return tickName.value == '' ? 'ticketName-message' 
   : ticketImgUrl.value == '' ? 'ticketImgUrl-message' 
   : ticketRegion.value == '' ? 'ticketRegion-message'
-  : ticketPrice.value == '' ? 'ticketPrice-message'
-  : ticketNum.value == '' ? 'ticketNum-message'
-  : ticketRate.value == '' ? 'ticketRate-message'
+  : (ticketPrice.value == '' || ticketPrice.value == 0 || ticketPrice.value < 0) ? 'ticketPrice-message'
+  : (ticketNum.value == '' || ticketNum.value == 0 || ticketNum.value < 0) ? 'ticketNum-message'
+  : (ticketRate.value == '' || ticketRate.value > 10 || ticketRate.value <= 0) ? 'ticketRate-message'
   : ticketDescription.value == '' ? 'ticketDescription-message'
   : true
 }
 
-function cardInit(){
-  axios.get(url).then((res) => {
-    data = res.data.data
-    getData('全部地區', false);
-  });
+function cardInit(state){
+  if(state == true){
+    axios.get(url).then((res)=>{
+      data = res.data.data;
+      getData('地區搜尋', false);
+    })
+  }else{
+    getData('地區搜尋', false);
+  }
 }
 
 function formInit(){
@@ -87,7 +89,9 @@ function formInit(){
     ticketNum.value = '';
     ticketRate.value = '';
     ticketDescription.value = '';
-    regionSearch.value = '全部地區';
+    regionSearch.value = '地區搜尋';
+    searchResultText.classList.remove('d-block');
+    searchResultText.classList.add('d-none');
 }
 
 function buildTicketCard(ticketData){
@@ -126,17 +130,22 @@ function buildTicketCard(ticketData){
 }
 
 function getData(target, state){
+  console.log(target, state)
   ul.innerHTML = '';
   searchResult = [];
 
   data.forEach( item => {
-      if(target == item.area || target == '全部地區'){
+      if(target == item.area || target == '全部地區' || target == "地區搜尋"){
         buildTicketCard(item);
         searchResult.push(item);
       }
   });
 
-  searchResultText.textContent = `本次搜尋共 ${searchResult.length} 筆資料`;
+  if(state == true){
+    searchResultText.classList.remove('d-none');
+    searchResultText.classList.add('d-block');
+    searchResultText.textContent = `本次搜尋共 ${searchResult.length} 筆資料`;
+  }
 
   if(searchResult.length == 0 && state == true){
     searchResultFail.classList.remove('d-none');
