@@ -44,13 +44,9 @@ submit.addEventListener('click',(e)=>{
     cardInit(false);
 })
 
-regionSearch.addEventListener('click', (e)=>{
-    let select = regionSearch.value;
-    if(select){
-      searchValue.textContent = e.toElement.value;
-      getData(e.toElement.value, true);
-    }
-})
+function selectChange(select){
+  getData(select, true);
+}
 
 function checkInput(){
   let alert = document.querySelectorAll('.alert-message');
